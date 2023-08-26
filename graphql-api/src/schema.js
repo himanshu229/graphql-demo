@@ -49,9 +49,8 @@ const RootQuery = new GraphQLObjectType({
     books: {
       type: new GraphQLList(BookType),
       async resolve() {
-        const book = await BookList();
-       console.log(book)
-        return books;
+        const book = await BookList.find();
+        return book;
       },
     },
   },
@@ -91,8 +90,23 @@ const Mutation = new GraphQLObjectType({
         authorName: { type: new GraphQLNonNull(GraphQLString) },
         subject: { type: new GraphQLNonNull(GraphQLString) },
       },
-      resolve(parent, args) {
+      async resolve(parent, args) {
+        const books = await BookList.find();
         const index = books.findIndex((book) => book.id === args.id);
+        const options = {
+          new: true,
+          upsert: true,
+          returnOriginal: false, // This ensures that the updated document is returned
+        };
+        await BookList.findByIdAndUpdate(
+          { _id: args.id },
+          {
+            bookName: args.bookName,
+            authorName: args.authorName,
+            subject: args.subject,
+          },
+          options
+        );
         if (index !== -1) {
           books[index] = {
             ...books[index],
@@ -111,14 +125,8 @@ const Mutation = new GraphQLObjectType({
       args: {
         id: { type: new GraphQLNonNull(GraphQLString) },
       },
-      resolve(parent, args) {
-        const index = books.findIndex((book) => book.id === args.id);
-        if (index !== -1) {
-          const deletedBook = books.splice(index, 1)[0];
-          return deletedBook;
-        } else {
-          throw new Error("Book not found.");
-        }
+      async resolve(parent, args) {
+        await BookList.deleteMany({ _id: args.id });
       },
     },
   },
