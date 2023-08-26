@@ -90,8 +90,10 @@ const AddBook = (props) => {
   const handleSubmit = (values, { resetForm }) => {
     if (props.edit) {
       updateBook({ variables: { ...values, id: props?.editData?.id } });
+      handleClose()
     } else {
       addBook({ variables: values });
+      handleClose()
     }
     if (!props.edit) {
       resetForm();
