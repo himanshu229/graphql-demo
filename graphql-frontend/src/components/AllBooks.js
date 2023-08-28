@@ -1,6 +1,6 @@
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { Box, Divider, Typography } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import AddBook from "./AddBook";
 import DataTable from "./DataTable";
 
@@ -26,7 +26,17 @@ const DELETE_BOOK = gql`
 const AllBooks = () => {
   const { loading, error, data, refetch } = useQuery(GET_BOOKS);
   const [deleteBook] = useMutation(DELETE_BOOK);
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = event => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
   const handleDelete = async (id) => {
     try {
       await deleteBook({ variables: { id } });
@@ -61,10 +71,10 @@ const AllBooks = () => {
             <DataTable
               data={data?.books}
               onDelete={handleDelete}
-              handleChangePage={(e) => {}}
-              handleChangeRowsPerPage={(e) => {}}
-              rowsPerPage={0}
-              page={0}
+              handleChangePage={handleChangePage}
+              handleChangeRowsPerPage={handleChangeRowsPerPage}
+              rowsPerPage={rowsPerPage}
+              page={page}
             />
           </Box>
         )}
